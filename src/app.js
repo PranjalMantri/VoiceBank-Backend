@@ -1,4 +1,4 @@
-import { Express, json } from "express";
+import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
@@ -20,4 +20,8 @@ app.use(
 );
 app.use(cookieParser());
 
+// importing routers
+import userRouter from "./routes/user.routes.js";
+
+app.use("/api/v1/user", userRouter);
 export default app;
