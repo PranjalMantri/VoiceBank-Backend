@@ -209,6 +209,35 @@ const updateUserPassword = asyncHandler(async (req, res) => {
   if (!isValidObjectId) {
     throw new ApiError(400, "Invalid ");
   }
+
+  if (!password) {
+    throw new ApiError(400, "Password is required");
+  }
+
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new ApiError(404, "User does not exists");
+  }
+
+  const isPasswordValid = user.isPasswordCorrect(password);
+
+  if (!isPasswordValid) {
+    throw new ApiError(404, "Invalid user credentials");
+  }
+
+  user.password = password;
+  user.save({ validateBeforeSave: false });
+
+  const updatedUser = await User.findById(user._id).select(
+    "-password -refreshToken"
+  );
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, updatedUser, "User password updated successfuly")
+    );
 });
 
 const deleteUser = asyncHandler(async (req, res) => {});
