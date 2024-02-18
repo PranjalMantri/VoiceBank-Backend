@@ -14,6 +14,13 @@ const loanSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Account",
     },
+    interestRate: {
+      type: Number,
+      required: true,
+    },
+    purpose: {
+      type: String,
+    },
   },
   { timestamps: true }
 );
