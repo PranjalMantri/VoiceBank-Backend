@@ -240,7 +240,23 @@ const updateUserPassword = asyncHandler(async (req, res) => {
     );
 });
 
-const deleteUser = asyncHandler(async (req, res) => {});
+const deleteUser = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  if (!isValidObjectId(userId)) {
+    throw new ApiError(400, "Invalid user id");
+  }
+
+  const user = await User.findByIdAndDelete(userId);
+
+  if (!user) {
+    throw new ApiError(500, "Something went wrong while deleting user");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Deleted user successfuly"));
+});
 
 export {
   registerUser,
