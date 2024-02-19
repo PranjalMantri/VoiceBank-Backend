@@ -113,8 +113,28 @@ const getAccountOwner = asyncHandler(async (req, res) => {
     );
 });
 
-const getUserBalance = asyncHandler(async (req, res) => {
-  //TODO: get user's balance
+const getAccountBalance = asyncHandler(async (req, res) => {
+  const { accountId } = req.params;
+
+  if (!isValidObjectId(accountId)) {
+    throw new ApiError(400, "Invalid accountId");
+  }
+
+  const account = await Account.findById(accountId);
+
+  if (!account) {
+    throw new ApiError(404, "Account does not exist");
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { balance: account.balance },
+        "Fetched account's balance successfuly"
+      )
+    );
 });
 
 const getUserTransactions = asyncHandler(async (req, res) => {
@@ -125,6 +145,6 @@ export {
   createAccount,
   getAccount,
   getAccountOwner,
-  getUserBalance,
+  getAccountBalance,
   getUserTransactions,
 };
