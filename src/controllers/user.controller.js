@@ -23,7 +23,6 @@ const generateAccessAndRefreshTokens = async (userId) => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-  console.log(req.body);
   const { fullName, username, email, password } = req.body;
 
   if (!fullName) {
@@ -50,11 +49,14 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(409, "User already exists");
   }
 
+  const customerId = await User.generateCustomerId();
+
   const user = await User.create({
     fullName,
     username: username.toLowerCase(),
     email,
     password,
+    customerId,
   });
 
   const createdUser = await User.findById(user._id).select(
