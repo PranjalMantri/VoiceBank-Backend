@@ -260,6 +260,11 @@ const deleteUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Deleted user successfuly"));
 });
 
+//TODO:
+// getUserAccounts
+// getUserBalance
+// getUserTransactions
+
 export {
   registerUser,
   loginUser,
