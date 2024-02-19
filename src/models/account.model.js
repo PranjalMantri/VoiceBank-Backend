@@ -28,4 +28,4 @@ const accoutSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export const Accout = mongoose.model("Account", accoutSchema);
+export const Account = mongoose.model("Account", accoutSchema);

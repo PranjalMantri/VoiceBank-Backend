@@ -1,4 +1,4 @@
-import { Account } from "../models/accout.model.js";
+import { Account } from "../models/account.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
@@ -6,6 +6,7 @@ import { isValidObjectId } from "mongoose";
 
 const createAccount = asyncHandler(async (req, res) => {
   //TODO: Create user's account
+  // generating a random account number
 });
 
 const getAccount = asyncHandler(async (req, res) => {
