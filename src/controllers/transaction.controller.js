@@ -211,6 +211,52 @@ const getTotalTransactionOfAccount = asyncHandler(async (req, res) => {
   if (!account) {
     throw new ApiError(404, "Account does not exist");
   }
+
+  const transactionIds = account.transactions;
+
+  if (!transactionIds) {
+    throw new ApiError(404, "The account has no transactions");
+  }
+
+  const transactions = await Transaction.aggregate([
+    {
+      $match: {
+        _id: {
+          $in: transactionIds,
+        },
+      },
+    },
+    //   {
+    //     $group: {
+    //       _id: null,
+    //       transactions: {
+    //         $push: "$$ROOT",
+    //       },
+    //       numOfTransactions: {
+    //         $sum: 1,
+    //       },
+    //     },
+    //   },
+    //   {
+    //     $project: {
+    //       _id: 0,
+    //       numOfTransactions: 1,
+    //       transactions: 1,
+    //     },
+    //   },
+  ]);
+
+  if (!transactions) {
+    throw new ApiError(
+      500,
+      "Something went wrong while getting account's transactions"
+    );
+  }
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, transactions, "Fetched all transaction successfuly")
+    );
 });
 
 const getTransactionsByType = asyncHandler(async (req, res) => {});
