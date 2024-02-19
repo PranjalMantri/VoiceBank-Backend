@@ -5,6 +5,7 @@ import { ApiResponse } from "../utils/apiResponse.js";
 import { isValidObjectId } from "mongoose";
 import { Account } from "../models/account.model.js";
 import { Transaction } from "../models/transaction.model.js";
+import mongoose from "mongoose";
 
 const createTransaction = asyncHandler(async (req, res) => {
   const { amount, toAccount, pin } = req.body;
@@ -336,7 +337,51 @@ const getTransactionsByType = asyncHandler(async (req, res) => {
   );
 });
 
-const getTransactionCount = asyncHandler(async (req, res) => {});
+const getTransactionCount = asyncHandler(async (req, res) => {
+  const { accountId } = req.params;
+
+  if (!isValidObjectId(accountId)) {
+    throw new ApiError(404, "Invalid Transaction Id");
+  }
+
+  // const account = await Account.findById(accountId);
+  // console.log(account);
+
+  // if (!account) {
+  //   throw new ApiError(404, "Account does not exist");
+  // }
+
+  const account = await Account.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(accountId),
+      },
+    },
+    {
+      $addFields: {
+        transactionCount: {
+          $size: "$transactions",
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        transactionCount: 1,
+      },
+    },
+  ]);
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        account,
+        "Successfuly fetched the number of transactions"
+      )
+    );
+});
 
 export {
   createTransaction,

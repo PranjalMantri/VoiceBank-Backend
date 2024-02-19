@@ -5,6 +5,7 @@ import {
   createTransaction,
   createWithdrawl,
   getTotalTransactionOfAccount,
+  getTransactionCount,
   getTransactionFromId,
   getTransactionsByType,
 } from "../controllers/transaction.controller.js";
@@ -22,4 +23,6 @@ router
   .get(getTotalTransactionOfAccount);
 
 router.route("/transaction-type/:accountId").get(getTransactionsByType);
+router.route("/count/:accountId").get(getTransactionCount);
+
 export default router;
