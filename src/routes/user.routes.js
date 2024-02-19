@@ -8,6 +8,8 @@ import {
   deleteUser,
   updateUserPassword,
   getUserAccount,
+  getUserTransactions,
+  getUserBalance,
 } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -26,5 +28,7 @@ router
 
 router.route("/update-password/:userId").patch(verifyJWT, updateUserPassword);
 router.route("/a/:userId").get(verifyJWT, getUserAccount);
+router.route("/b/:userId").get(verifyJWT, getUserBalance);
+router.route("/t/:userId").get(verifyJWT, getUserTransactions);
 
 export default router;

@@ -288,10 +288,71 @@ const getUserAccount = asyncHandler(async (req, res) => {
       new ApiResponse(200, userAccounts, "Fetched user's accounts successfuly")
     );
 });
-//TODO:
-// getUserAccounts
-// getUserBalance
-// getUserTransactions
+
+const getUserBalance = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  if (!isValidObjectId(userId)) {
+    throw new ApiError(404, "Invalid user id");
+  }
+
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new ApiError(404, "User does not exist");
+  }
+
+  const account = await Account.findOne({
+    owner: userId,
+  });
+
+  if (!account) {
+    throw new ApiError(401, "User has no accounts");
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { balance: account.balance },
+        "Fetched user's accounts successfuly"
+      )
+    );
+});
+
+const getUserTransactions = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  if (!isValidObjectId(userId)) {
+    throw new ApiError(404, "Invalid user id");
+  }
+
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new ApiError(404, "User does not exist");
+  }
+
+  const account = await Account.findOne({
+    owner: userId,
+  });
+
+  console.log(account);
+  if (!account) {
+    throw new ApiError(401, "User has no accounts");
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { transactions: account.transactions },
+        "Fetched user's accounts successfuly"
+      )
+    );
+});
 
 export {
   registerUser,
@@ -302,4 +363,6 @@ export {
   updateUserPassword,
   deleteUser,
   getUserAccount,
+  getUserBalance,
+  getUserTransactions,
 };
