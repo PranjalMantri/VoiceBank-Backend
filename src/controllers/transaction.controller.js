@@ -117,11 +117,89 @@ const createDeposit = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, transaction, "Transfered funds successfuly"));
 });
-const getTransactionFromId = asyncHandler(async (req, res) => {
-  //TODO: get transaction
+
+const createWithdrawl = asyncHandler(async (req, res) => {
+  const { amount, pin } = req.body;
+
+  if (!amount) {
+    throw new ApiError(404, "amount is required");
+  }
+
+  if (!pin) {
+    throw new ApiError(404, "Pin is required");
+  }
+
+  const receiverUser = await User.findById(req.user._id);
+
+  if (!receiverUser) {
+    throw new ApiError(404, "The receiver does not exist");
+  }
+
+  const receiverAccount = await Account.findOne({
+    owner: receiverUser._id,
+  });
+
+  if (!receiverAccount) {
+    throw new ApiError(404, "Receiver does not exist");
+  }
+
+  const isPinValid = receiverAccount.pin == pin;
+
+  if (!isPinValid) {
+    throw new ApiError(404, "Invalid pin");
+  }
+
+  const isTransactionValid = receiverAccount.balance > amount;
+
+  if (!isTransactionValid) {
+    throw new ApiError(404, "Insufficient balance");
+  }
+
+  const transaction = await Transaction.create({
+    type: "Withdrawl",
+    amount,
+    toAccount: receiverAccount.accountNumber,
+  });
+
+  receiverAccount.balance = Number(receiverAccount.balance) - Number(amount);
+  receiverAccount.save({ validateBeforeSave: false });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, transaction, "Transfered funds successfuly"));
 });
 
-const getTotalTransactionOfAccount = asyncHandler(async (req, res) => {});
+const getTransactionFromId = asyncHandler(async (req, res) => {
+  const { transactionId } = req.params;
+
+  if (!isValidObjectId(transactionId)) {
+    throw new ApiError(404, "Invalid transaction Id");
+  }
+
+  const transaction = await Transaction.findById(transactionId);
+
+  if (!transaction) {
+    throw new ApiError(404, "Transaction does not exist");
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        transaction,
+        "Successfully fetched transaction from Id"
+      )
+    );
+});
+
+const getTotalTransactionOfAccount = asyncHandler(async (req, res) => {
+  const { acountId } = req.params;
+
+  if (!isValidObjectId) {
+    throw new ApiError(404, "Invalid Transaction Id");
+  }
+});
 
 const getTransactionsByType = asyncHandler(async (req, res) => {});
 
@@ -130,6 +208,7 @@ const getTransactionCount = asyncHandler(async (req, res) => {});
 export {
   createTransaction,
   createDeposit,
+  createWithdrawl,
   getTransactionFromId,
   getTotalTransactionOfAccount,
   getTransactionsByType,
