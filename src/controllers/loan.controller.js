@@ -3,7 +3,7 @@ import { Account } from "../models/account.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
-import mongoose from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import {
   SAVINGS_ACCOUNT_INTEREST_RATE,
   CURRENT_ACCOUNT_INTEREST_RATE,
@@ -84,10 +84,38 @@ const createLoan = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, loan, "Loan request processed successfuly"));
 });
 
-const getLoan = asyncHandler(async (req, res) => {});
+const getLoan = asyncHandler(async (req, res) => {
+  const { loanId } = req.params;
 
-const updateLoan = asyncHandler(async (req, res) => {});
+  if (!isValidObjectId(loanId)) {
+    throw new ApiError(404, "Invalid loan Id");
+  }
 
-const deleteLoan = asyncHandler(async (req, res) => {});
+  const loan = await Loan.findById(loanId);
 
-export { createLoan, getLoan, updateLoan, deleteLoan };
+  if (!loan) {
+    throw new ApiError(404, "Loan does not exist");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, loan, "Fetched loan from Id successfuly"));
+});
+
+// const updateLoan = asyncHandler(async (req, res) => {});
+
+const deleteLoan = asyncHandler(async (req, res) => {
+  const { loanId } = req.params;
+
+  if (!isValidObjectId(loanId)) {
+    throw new ApiError(404, "Invalid loan Id");
+  }
+
+  const loan = await Loan.findByIdAndDelete(loanId);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Deletd loan successfuly"));
+});
+
+export { createLoan, getLoan, deleteLoan };
