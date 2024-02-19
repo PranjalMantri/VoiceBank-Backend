@@ -18,6 +18,10 @@ const accoutSchema = new mongoose.Schema(
       type: Number,
       default: 1000,
     },
+    pin: {
+      type: Number,
+      required: true,
+    },
     transactions: [
       {
         type: mongoose.Schema.Types.ObjectId,

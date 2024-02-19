@@ -8,10 +8,14 @@ import aleaRNGFactory from "number-generator/lib/aleaRNGFactory.js";
 import mongoose from "mongoose";
 
 const createAccount = asyncHandler(async (req, res) => {
-  const { accountType } = req.body;
+  const { accountType, pin } = req.body;
 
   if (!accountType) {
-    throw new ApiError(404, "Invalid account type");
+    throw new ApiError(404, "Account type is required");
+  }
+
+  if (!pin) {
+    throw new ApiError(404, "Pin is required");
   }
 
   const alreadyHasAccount = await Account.findOne({
@@ -35,6 +39,7 @@ const createAccount = asyncHandler(async (req, res) => {
     owner: req.user._id,
     accountType,
     accountNumber,
+    pin,
   });
 
   if (!account) {

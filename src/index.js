@@ -3,6 +3,8 @@ import connectDB from "./db/index.js";
 import dotenv from "dotenv";
 dotenv.config();
 
+//FIXME: Hash the account pin
+
 const port = process.env.PORT || 8000;
 
 connectDB()
