@@ -88,7 +88,7 @@ const createDeposit = asyncHandler(async (req, res) => {
   }
 
   const receiverUser = await User.findById(req.user._id);
-
+  console.log(req.user.fullName);
   if (!receiverUser) {
     throw new ApiError(404, "The receiver does not exist");
   }
@@ -96,7 +96,7 @@ const createDeposit = asyncHandler(async (req, res) => {
   const receiverAccount = await Account.findOne({
     owner: receiverUser._id,
   });
-
+  console.log(receiverAccount);
   if (!receiverAccount) {
     throw new ApiError(404, "Receiver does not exist");
   }
@@ -259,7 +259,82 @@ const getTotalTransactionOfAccount = asyncHandler(async (req, res) => {
     );
 });
 
-const getTransactionsByType = asyncHandler(async (req, res) => {});
+const getTransactionsByType = asyncHandler(async (req, res) => {
+  const { accountId } = req.params;
+
+  if (!isValidObjectId(accountId)) {
+    throw new ApiError(404, "Invalid Transaction Id");
+  }
+
+  const account = await Account.findById(accountId);
+
+  if (!account) {
+    throw new ApiError(404, "Account does not exist");
+  }
+
+  const transactionIds = account.transactions;
+
+  if (!transactionIds) {
+    throw new ApiError(404, "The account has no transactions");
+  }
+
+  const transfers = await Transaction.aggregate([
+    {
+      $match: {
+        _id: {
+          $in: transactionIds,
+        },
+      },
+    },
+    {
+      $match: {
+        type: "Transfer",
+      },
+    },
+  ]);
+
+  const deposits = await Transaction.aggregate([
+    {
+      $match: {
+        _id: {
+          $in: transactionIds,
+        },
+      },
+    },
+    {
+      $match: {
+        type: "Deposit",
+      },
+    },
+  ]);
+
+  const withdrawls = await Transaction.aggregate([
+    {
+      $match: {
+        _id: {
+          $in: transactionIds,
+        },
+      },
+    },
+    {
+      $match: {
+        type: "Withdrawl",
+      },
+    },
+  ]);
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        transfers,
+        deposits,
+        withdrawls,
+      },
+      "Fetched all transaction successfuly"
+    )
+  );
+});
 
 const getTransactionCount = asyncHandler(async (req, res) => {});
 
