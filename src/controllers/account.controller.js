@@ -16,11 +16,10 @@ const createAccount = asyncHandler(async (req, res) => {
 
   const alreadyHasAccount = await Account.findOne({
     owner: req.user._id,
-    accountType,
   });
 
   if (alreadyHasAccount) {
-    throw new ApiError(500, `User already has a ${accountType} account`);
+    throw new ApiError(500, `User already has a account`);
   }
 
   const accountNumber = aleaRNGFactory(req.user.customerId).uInt32();

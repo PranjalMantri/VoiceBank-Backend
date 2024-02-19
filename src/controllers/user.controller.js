@@ -1,4 +1,5 @@
 import { User } from "../models/user.model.js";
+import { Account } from "../models/account.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
@@ -260,6 +261,33 @@ const deleteUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Deleted user successfuly"));
 });
 
+const getUserAccount = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  if (!isValidObjectId(userId)) {
+    throw new ApiError(404, "Invalid user id");
+  }
+
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new ApiError(404, "User does not exist");
+  }
+
+  const userAccounts = await Account.find({
+    owner: userId,
+  });
+
+  if (!userAccounts) {
+    throw new ApiError(401, "User has no accounts");
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, userAccounts, "Fetched user's accounts successfuly")
+    );
+});
 //TODO:
 // getUserAccounts
 // getUserBalance
@@ -273,4 +301,5 @@ export {
   updateUserDetails,
   updateUserPassword,
   deleteUser,
+  getUserAccount,
 };
