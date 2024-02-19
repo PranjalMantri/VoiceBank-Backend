@@ -65,8 +65,11 @@ const createTransaction = asyncHandler(async (req, res) => {
   senderAccount.balance = senderAccount.balance - amount;
   receiverAccount.balance = Number(receiverAccount.balance) + Number(amount);
 
-  senderAccount.save({ validateBeforeSave: false });
+  senderAccount.transactions.push(transaction);
+  receiverAccount.transactions.push(transaction);
+
   receiverAccount.save({ validateBeforeSave: false });
+  senderAccount.save({ validateBeforeSave: false });
 
   return res
     .status(200)
@@ -111,6 +114,7 @@ const createDeposit = asyncHandler(async (req, res) => {
   });
 
   receiverAccount.balance = Number(receiverAccount.balance) + Number(amount);
+  receiverAccount.transactions.push(transaction);
   receiverAccount.save({ validateBeforeSave: false });
 
   return res
@@ -129,27 +133,27 @@ const createWithdrawl = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Pin is required");
   }
 
-  const receiverUser = await User.findById(req.user._id);
+  const withdrawingUser = await User.findById(req.user._id);
 
-  if (!receiverUser) {
+  if (!withdrawingUser) {
     throw new ApiError(404, "The receiver does not exist");
   }
 
-  const receiverAccount = await Account.findOne({
-    owner: receiverUser._id,
+  const withdrawingAccount = await Account.findOne({
+    owner: withdrawingUser._id,
   });
 
-  if (!receiverAccount) {
+  if (!withdrawingAccount) {
     throw new ApiError(404, "Receiver does not exist");
   }
 
-  const isPinValid = receiverAccount.pin == pin;
+  const isPinValid = withdrawingAccount.pin == pin;
 
   if (!isPinValid) {
     throw new ApiError(404, "Invalid pin");
   }
 
-  const isTransactionValid = receiverAccount.balance > amount;
+  const isTransactionValid = withdrawingAccount.balance > amount;
 
   if (!isTransactionValid) {
     throw new ApiError(404, "Insufficient balance");
@@ -158,11 +162,13 @@ const createWithdrawl = asyncHandler(async (req, res) => {
   const transaction = await Transaction.create({
     type: "Withdrawl",
     amount,
-    toAccount: receiverAccount.accountNumber,
+    toAccount: withdrawingAccount.accountNumber,
   });
 
-  receiverAccount.balance = Number(receiverAccount.balance) - Number(amount);
-  receiverAccount.save({ validateBeforeSave: false });
+  withdrawingAccount.balance =
+    Number(withdrawingAccount.balance) - Number(amount);
+  withdrawingAccount.transactions.push(transaction);
+  withdrawingAccount.save({ validateBeforeSave: false });
 
   return res
     .status(200)
@@ -194,10 +200,16 @@ const getTransactionFromId = asyncHandler(async (req, res) => {
 });
 
 const getTotalTransactionOfAccount = asyncHandler(async (req, res) => {
-  const { acountId } = req.params;
+  const { accountId } = req.params;
 
-  if (!isValidObjectId) {
+  if (!isValidObjectId(accountId)) {
     throw new ApiError(404, "Invalid Transaction Id");
+  }
+
+  const account = await Account.findById(accountId);
+
+  if (!account) {
+    throw new ApiError(404, "Account does not exist");
   }
 });
 
