@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 const transactionSchema = new mongoose.Schema(
   {
     type: {
-      // Deposit, Withdrawl, Transfer
       type: String,
       required: true,
     },

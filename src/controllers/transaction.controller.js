@@ -344,13 +344,6 @@ const getTransactionCount = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Invalid Transaction Id");
   }
 
-  // const account = await Account.findById(accountId);
-  // console.log(account);
-
-  // if (!account) {
-  //   throw new ApiError(404, "Account does not exist");
-  // }
-
   const account = await Account.aggregate([
     {
       $match: {

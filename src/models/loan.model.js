@@ -3,8 +3,9 @@ import mongoose from "mongoose";
 const loanSchema = new mongoose.Schema(
   {
     status: {
+      // Approved, Pending
       type: String,
-      required: true,
+      default: "PENDING",
     },
     amount: {
       type: Number,
@@ -15,14 +16,21 @@ const loanSchema = new mongoose.Schema(
       ref: "Account",
     },
     interestRate: {
+      // calculate on basis of type of account
       type: Number,
       required: true,
     },
     purpose: {
+      // Home loan, gold loan, personal loan
       type: String,
     },
   },
   { timestamps: true }
 );
+
+loanSchema.methods.approveLoan = function (balance, amount) {
+  // balance has to be atleast half of the loan amount
+  return balance * 2 >= amount;
+};
 
 export const Loan = mongoose.model("Loan", loanSchema);
