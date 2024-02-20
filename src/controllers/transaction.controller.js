@@ -11,15 +11,15 @@ const createTransaction = asyncHandler(async (req, res) => {
   const { amount, toAccount, pin } = req.body;
 
   if (!amount) {
-    throw new ApiError(404, "amount is required");
+    throw new ApiError(400, "amount is required");
   }
 
   if (!pin) {
-    throw new ApiError(404, "Pin is required");
+    throw new ApiError(400, "Pin is required");
   }
 
   if (!toAccount) {
-    throw new ApiError(404, "toAccount is required");
+    throw new ApiError(400, "toAccount is required");
   }
 
   const senderUser = await User.findById(req.user._id);
@@ -47,13 +47,13 @@ const createTransaction = asyncHandler(async (req, res) => {
   const isPinValid = senderAccount.pin == pin;
 
   if (!isPinValid) {
-    throw new ApiError(404, "Invalid pin");
+    throw new ApiError(400, "Invalid pin");
   }
 
   const isTransactionValid = senderAccount.balance > amount;
 
   if (!isTransactionValid) {
-    throw new ApiError(404, "Insufficient funds to transfer");
+    throw new ApiError(400, "Insufficient funds to transfer");
   }
 
   const transaction = await Transaction.create({
@@ -81,11 +81,11 @@ const createDeposit = asyncHandler(async (req, res) => {
   const { amount, pin } = req.body;
 
   if (!amount) {
-    throw new ApiError(404, "amount is required");
+    throw new ApiError(400, "amount is required");
   }
 
   if (!pin) {
-    throw new ApiError(404, "Pin is required");
+    throw new ApiError(400, "Pin is required");
   }
 
   const receiverUser = await User.findById(req.user._id);
@@ -105,7 +105,7 @@ const createDeposit = asyncHandler(async (req, res) => {
   const isPinValid = receiverAccount.pin == pin;
 
   if (!isPinValid) {
-    throw new ApiError(404, "Invalid pin");
+    throw new ApiError(400, "Invalid pin");
   }
 
   const transaction = await Transaction.create({
@@ -127,11 +127,11 @@ const createWithdrawl = asyncHandler(async (req, res) => {
   const { amount, pin } = req.body;
 
   if (!amount) {
-    throw new ApiError(404, "amount is required");
+    throw new ApiError(400, "amount is required");
   }
 
   if (!pin) {
-    throw new ApiError(404, "Pin is required");
+    throw new ApiError(400, "Pin is required");
   }
 
   const withdrawingUser = await User.findById(req.user._id);
@@ -145,19 +145,19 @@ const createWithdrawl = asyncHandler(async (req, res) => {
   });
 
   if (!withdrawingAccount) {
-    throw new ApiError(404, "Receiver does not exist");
+    throw new ApiError(404, "Receiver does not have a account");
   }
 
   const isPinValid = withdrawingAccount.pin == pin;
 
   if (!isPinValid) {
-    throw new ApiError(404, "Invalid pin");
+    throw new ApiError(400, "Invalid pin");
   }
 
   const isTransactionValid = withdrawingAccount.balance > amount;
 
   if (!isTransactionValid) {
-    throw new ApiError(404, "Insufficient balance");
+    throw new ApiError(400, "Insufficient balance");
   }
 
   const transaction = await Transaction.create({
@@ -216,7 +216,7 @@ const getTotalTransactionOfAccount = asyncHandler(async (req, res) => {
   const transactionIds = account.transactions;
 
   if (!transactionIds) {
-    throw new ApiError(404, "The account has no transactions");
+    throw new ApiError(401, "The account has no transactions");
   }
 
   const transactions = await Transaction.aggregate([
@@ -227,24 +227,6 @@ const getTotalTransactionOfAccount = asyncHandler(async (req, res) => {
         },
       },
     },
-    //   {
-    //     $group: {
-    //       _id: null,
-    //       transactions: {
-    //         $push: "$$ROOT",
-    //       },
-    //       numOfTransactions: {
-    //         $sum: 1,
-    //       },
-    //     },
-    //   },
-    //   {
-    //     $project: {
-    //       _id: 0,
-    //       numOfTransactions: 1,
-    //       transactions: 1,
-    //     },
-    //   },
   ]);
 
   if (!transactions) {
@@ -276,7 +258,7 @@ const getTransactionsByType = asyncHandler(async (req, res) => {
   const transactionIds = account.transactions;
 
   if (!transactionIds) {
-    throw new ApiError(404, "The account has no transactions");
+    throw new ApiError(401, "The account has no transactions");
   }
 
   const transfers = await Transaction.aggregate([

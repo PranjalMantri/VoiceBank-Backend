@@ -15,11 +15,11 @@ const createLoan = asyncHandler(async (req, res) => {
   const { amount, purpose } = req.body;
 
   if (!amount) {
-    throw new ApiError(404, "Amount is required");
+    throw new ApiError(400, "Amount is required");
   }
 
   if (!purpose) {
-    throw new ApiError(404, "Purpose is required");
+    throw new ApiError(400, "Purpose is required");
   }
 
   const account = await Account.aggregate([

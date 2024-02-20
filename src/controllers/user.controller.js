@@ -60,6 +60,10 @@ const registerUser = asyncHandler(async (req, res) => {
     customerId,
   });
 
+  if (!user) {
+    throw new ApiError(500, "Something went wrong while registering the user");
+  }
+
   const createdUser = await User.findById(user._id).select(
     "-password -refreshToken"
   );
@@ -89,13 +93,13 @@ const loginUser = asyncHandler(async (req, res) => {
   });
 
   if (!user) {
-    throw new ApiError(400, "User does not exists");
+    throw new ApiError(404, "User does not exists");
   }
 
   const isPasswordValid = await user.isPasswordCorrect(password);
 
   if (!isPasswordValid) {
-    throw new ApiError(400, "Incorrect user credentials");
+    throw new ApiError(401, "Incorrect user credentials");
   }
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
@@ -163,7 +167,7 @@ const getUserById = asyncHandler(async (req, res) => {
   const user = await User.findById(userId).select("-password -refreshToken");
 
   if (!user) {
-    throw new ApiError(400, "User does not exist");
+    throw new ApiError(404, "User does not exist");
   }
 
   return res
@@ -180,11 +184,11 @@ const updateUserDetails = asyncHandler(async (req, res) => {
   }
 
   if (!fullName) {
-    throw new ApiError(404, "Fullname is required");
+    throw new ApiError(400, "Fullname is required");
   }
 
   if (!username) {
-    throw new ApiError(404, "Username is required");
+    throw new ApiError(400, "Username is required");
   }
 
   const user = await User.findByIdAndUpdate(
@@ -210,7 +214,7 @@ const updateUserPassword = asyncHandler(async (req, res) => {
   const { password } = req.body;
 
   if (!isValidObjectId) {
-    throw new ApiError(400, "Invalid ");
+    throw new ApiError(404, "Invalid ");
   }
 
   if (!password) {
@@ -226,7 +230,7 @@ const updateUserPassword = asyncHandler(async (req, res) => {
   const isPasswordValid = user.isPasswordCorrect(password);
 
   if (!isPasswordValid) {
-    throw new ApiError(404, "Invalid user credentials");
+    throw new ApiError(401, "Invalid user credentials");
   }
 
   user.password = password;
@@ -247,7 +251,7 @@ const deleteUser = asyncHandler(async (req, res) => {
   const { userId } = req.params;
 
   if (!isValidObjectId(userId)) {
-    throw new ApiError(400, "Invalid user id");
+    throw new ApiError(404, "Invalid user id");
   }
 
   const user = await User.findByIdAndDelete(userId);
@@ -279,7 +283,7 @@ const getUserAccount = asyncHandler(async (req, res) => {
   });
 
   if (!userAccounts) {
-    throw new ApiError(401, "User has no accounts");
+    throw new ApiError(404, "User has no accounts");
   }
 
   return res
@@ -307,7 +311,7 @@ const getUserBalance = asyncHandler(async (req, res) => {
   });
 
   if (!account) {
-    throw new ApiError(401, "User has no accounts");
+    throw new ApiError(404, "User has no accounts");
   }
 
   return res
@@ -340,7 +344,7 @@ const getUserTransactions = asyncHandler(async (req, res) => {
 
   console.log(account);
   if (!account) {
-    throw new ApiError(401, "User has no accounts");
+    throw new ApiError(404, "User has no accounts");
   }
 
   return res
