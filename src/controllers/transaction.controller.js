@@ -22,6 +22,7 @@ const createTransaction = asyncHandler(async (req, res) => {
     throw new ApiError(400, "toAccount is required");
   }
 
+  // Logged in user is the one who is sending money
   const senderUser = await User.findById(req.user._id);
 
   if (!senderUser) {
@@ -63,9 +64,11 @@ const createTransaction = asyncHandler(async (req, res) => {
     toAccount: receiverAccount.accountNumber,
   });
 
+  // Updating the balance after the transaction
   senderAccount.balance = senderAccount.balance - amount;
   receiverAccount.balance = Number(receiverAccount.balance) + Number(amount);
 
+  // adding the transaction in the transaction array of account Schema
   senderAccount.transactions.push(transaction);
   receiverAccount.transactions.push(transaction);
 
@@ -81,15 +84,16 @@ const createDeposit = asyncHandler(async (req, res) => {
   const { amount, pin } = req.body;
 
   if (!amount) {
-    throw new ApiError(400, "amount is required");
+    throw new ApiError(400, "Amount is required");
   }
 
   if (!pin) {
     throw new ApiError(400, "Pin is required");
   }
 
+  // While depositing, the logged in user will recieve the money
   const receiverUser = await User.findById(req.user._id);
-  console.log(req.user.fullName);
+
   if (!receiverUser) {
     throw new ApiError(404, "The receiver does not exist");
   }
@@ -97,11 +101,12 @@ const createDeposit = asyncHandler(async (req, res) => {
   const receiverAccount = await Account.findOne({
     owner: receiverUser._id,
   });
-  console.log(receiverAccount);
+
   if (!receiverAccount) {
     throw new ApiError(404, "Receiver does not exist");
   }
 
+  // Logged in user's pin
   const isPinValid = receiverAccount.pin == pin;
 
   if (!isPinValid) {
@@ -114,6 +119,7 @@ const createDeposit = asyncHandler(async (req, res) => {
     toAccount: receiverAccount.accountNumber,
   });
 
+  // Updating the balance and adding the transaction into transaction array in Account Schema
   receiverAccount.balance = Number(receiverAccount.balance) + Number(amount);
   receiverAccount.transactions.push(transaction);
   receiverAccount.save({ validateBeforeSave: false });
@@ -134,6 +140,7 @@ const createWithdrawl = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Pin is required");
   }
 
+  // Logged in user is withdrawing money
   const withdrawingUser = await User.findById(req.user._id);
 
   if (!withdrawingUser) {
@@ -148,6 +155,7 @@ const createWithdrawl = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Receiver does not have a account");
   }
 
+  // Logged in user's pin
   const isPinValid = withdrawingAccount.pin == pin;
 
   if (!isPinValid) {
@@ -166,6 +174,7 @@ const createWithdrawl = asyncHandler(async (req, res) => {
     toAccount: withdrawingAccount.accountNumber,
   });
 
+  // updating the balance and adding the transaction in transaction array of Account Schema
   withdrawingAccount.balance =
     Number(withdrawingAccount.balance) - Number(amount);
   withdrawingAccount.transactions.push(transaction);
@@ -213,12 +222,14 @@ const getTotalTransactionOfAccount = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Account does not exist");
   }
 
+  // getting the transaction array that contains transaction ids
   const transactionIds = account.transactions;
 
   if (!transactionIds) {
     throw new ApiError(401, "The account has no transactions");
   }
 
+  // populating the array based on the ids inside
   const transactions = await Transaction.aggregate([
     {
       $match: {
@@ -235,6 +246,7 @@ const getTotalTransactionOfAccount = asyncHandler(async (req, res) => {
       "Something went wrong while getting account's transactions"
     );
   }
+
   return res
     .status(200)
     .json(
@@ -255,12 +267,14 @@ const getTransactionsByType = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Account does not exist");
   }
 
+  // getting the transaction ids
   const transactionIds = account.transactions;
 
   if (!transactionIds) {
     throw new ApiError(401, "The account has no transactions");
   }
 
+  // getting all the transaction of type "Transfer"
   const transfers = await Transaction.aggregate([
     {
       $match: {
@@ -276,6 +290,7 @@ const getTransactionsByType = asyncHandler(async (req, res) => {
     },
   ]);
 
+  // getting all the transaction of type "Deposit"
   const deposits = await Transaction.aggregate([
     {
       $match: {
@@ -291,6 +306,7 @@ const getTransactionsByType = asyncHandler(async (req, res) => {
     },
   ]);
 
+  // getting all the transaction of type "Withdrawl"
   const withdrawls = await Transaction.aggregate([
     {
       $match: {
@@ -326,6 +342,7 @@ const getTransactionCount = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Invalid Transaction Id");
   }
 
+  // returns a new field that contains the count of all transactions
   const account = await Account.aggregate([
     {
       $match: {

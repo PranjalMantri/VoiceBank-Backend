@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const transactionSchema = new mongoose.Schema(
   {
     type: {
+      // Transfer, Deposit, Withdrawl
       type: String,
       required: true,
     },
@@ -11,9 +12,11 @@ const transactionSchema = new mongoose.Schema(
       required: true,
     },
     fromAccount: {
+      // The current user's accountNumber
       type: Number,
     },
     toAccount: {
+      // The reciever's accountNumber
       type: Number,
     },
   },

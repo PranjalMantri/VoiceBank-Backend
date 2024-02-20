@@ -5,11 +5,11 @@ const accoutSchema = new mongoose.Schema(
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-    },
+    }, // "savings", "current", "salary"
     accountType: {
       type: String,
       required: true,
-    },
+    }, // generated programmatically
     accountNumber: {
       type: Number,
       required: true,

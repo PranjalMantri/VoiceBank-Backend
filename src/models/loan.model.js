@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const loanSchema = new mongoose.Schema(
   {
     status: {
-      // Approved, Pending
+      // APPROVED, REJECTED, PENDING
       type: String,
       default: "PENDING",
     },

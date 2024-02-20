@@ -1,4 +1,3 @@
-import { User } from "../models/user.model.js";
 import { Account } from "../models/account.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
@@ -22,6 +21,7 @@ const createLoan = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Purpose is required");
   }
 
+  // getting the balance and accountType of user
   const account = await Account.aggregate([
     {
       $match: {
@@ -37,6 +37,7 @@ const createLoan = asyncHandler(async (req, res) => {
     },
   ]);
 
+  // calculating interestRate based on the accountType
   let interestRate;
 
   if (account.type === "salary") {
@@ -47,12 +48,11 @@ const createLoan = asyncHandler(async (req, res) => {
     interestRate = CURRENT_ACCOUNT_INTEREST_RATE;
   }
 
+  // If user already has a approved loan, it cannot get another loan
   const alreadyHasApprovedLoans = await Loan.findOne({
     account: account._id,
     status: "APPROVED",
   });
-
-  console.log(alreadyHasApprovedLoans);
 
   if (alreadyHasApprovedLoans) {
     throw new ApiError(409, "You already have a loan");
@@ -69,6 +69,7 @@ const createLoan = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Something went wrong while processing your loan");
   }
 
+  // approving the loan if criteria is met
   const isLoanApproved = await loan.approveLoan(account[0].balance, amount);
 
   let status = "APPROVED";

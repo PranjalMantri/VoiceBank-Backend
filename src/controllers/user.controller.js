@@ -7,10 +7,12 @@ import { isValidObjectId } from "mongoose";
 
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
+    // generates access and refresh token
     const user = await User.findById(userId);
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
 
+    // saved refresh token in database
     user.refreshToken = refreshToken;
     user.save({ validateBeforeSave: false });
 
@@ -42,6 +44,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Password is required");
   }
 
+  // Can't register user if it already exists
   const existedUser = await User.findOne({
     $or: [{ username }, { email }],
   });
@@ -50,6 +53,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(409, "User already exists");
   }
 
+  // generates customerId which is simply the number of user
   const customerId = await User.generateCustomerId();
 
   const user = await User.create({
@@ -88,6 +92,7 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Password is required");
   }
 
+  // user login using email Id
   const user = await User.findOne({
     email,
   });
@@ -102,6 +107,7 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Incorrect user credentials");
   }
 
+  // If user credentials are correct, generate access and refresh token
   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
     user._id
   );
@@ -115,6 +121,7 @@ const loginUser = asyncHandler(async (req, res) => {
     secure: true,
   };
 
+  // send access and refresh tokens that can only be modified by the server
   return res
     .status(200)
     .cookie("accessToken", accessToken, options)
@@ -133,6 +140,7 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
+  // delete the refresh token from database
   await User.findByIdAndUpdate(
     req.user._id,
     {
@@ -211,14 +219,18 @@ const updateUserDetails = asyncHandler(async (req, res) => {
 
 const updateUserPassword = asyncHandler(async (req, res) => {
   const { userId } = req.params;
-  const { password } = req.body;
+  const { oldPassword, newPassword } = req.body;
 
   if (!isValidObjectId) {
     throw new ApiError(404, "Invalid ");
   }
 
+  if (!oldPassword) {
+    throw new ApiError(400, "Old password is required");
+  }
+
   if (!password) {
-    throw new ApiError(400, "Password is required");
+    throw new ApiError(400, "New password is required");
   }
 
   const user = await User.findById(userId);
@@ -227,12 +239,13 @@ const updateUserPassword = asyncHandler(async (req, res) => {
     throw new ApiError(404, "User does not exists");
   }
 
-  const isPasswordValid = user.isPasswordCorrect(password);
+  const isPasswordValid = user.isPasswordCorrect(oldPassword);
 
   if (!isPasswordValid) {
     throw new ApiError(401, "Invalid user credentials");
   }
 
+  // if oldPassword matches the password in database, update the password with new password
   user.password = password;
   user.save({ validateBeforeSave: false });
 
@@ -306,6 +319,7 @@ const getUserBalance = asyncHandler(async (req, res) => {
     throw new ApiError(404, "User does not exist");
   }
 
+  //TODO:  user pipeline to directly return the balance
   const account = await Account.findOne({
     owner: userId,
   });
@@ -338,11 +352,11 @@ const getUserTransactions = asyncHandler(async (req, res) => {
     throw new ApiError(404, "User does not exist");
   }
 
+  // TODO: Use pipeline to directly return the transactions
   const account = await Account.findOne({
     owner: userId,
   });
 
-  console.log(account);
   if (!account) {
     throw new ApiError(404, "User has no accounts");
   }

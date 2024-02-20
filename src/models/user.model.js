@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema(
     },
     refreshToken: {
       type: String,
-    },
+    }, // generated programmatially
     customerId: {
       type: Number,
       required: true,
