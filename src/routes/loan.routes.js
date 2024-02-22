@@ -13,4 +13,3 @@ router.route("/").post(createLoan);
 router.route("/:loanId").get(getLoan).delete(deleteLoan);
 
 export default router;
-gpt
