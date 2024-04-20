@@ -4,13 +4,18 @@ import cors from "cors";
 
 const app = express();
 
-// app.use(
-//   cors({
-//     origin: process.env.CORS_ORIGIN,
-//   })
-// );
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5500",
+      "http://127.0.0.1:5500/",
+      "http://localhost:5500/",
+      "http://localhost:5500/home.html",
+    ],
+    credentials: true,
+  })
+);
 
-app.use(cors());
 app.use(express.json({ limit: "16kb" }));
 app.use(
   express.urlencoded({
@@ -18,6 +23,7 @@ app.use(
     limit: "16kb",
   })
 );
+
 app.use(cookieParser());
 
 // importing routers

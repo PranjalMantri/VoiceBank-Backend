@@ -4,6 +4,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { isValidObjectId } from "mongoose";
+import cookieParser from "cookie-parser";
 
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
@@ -86,13 +87,18 @@ const loginUser = asyncHandler(async (req, res) => {
 
   if (!email) {
     throw new ApiError(400, "Email is required");
+  } else {
+    console.log("email is valid");
   }
 
   if (!password) {
     throw new ApiError(400, "Password is required");
+  } else {
+    console.log("password is valid");
   }
 
   // user login using email Id
+  console.log("finding user");
   const user = await User.findOne({
     email,
   });
@@ -101,6 +107,7 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(404, "User does not exists");
   }
 
+  console.log("Checking password");
   const isPasswordValid = await user.isPasswordCorrect(password);
 
   if (!isPasswordValid) {
@@ -116,12 +123,13 @@ const loginUser = asyncHandler(async (req, res) => {
     "-password -refreshToken"
   );
 
+  // send access and refresh tokens that can only be modified by the server
+  console.log("Logging in");
+
   const options = {
     httpOnly: true,
-    secure: true,
   };
 
-  // send access and refresh tokens that can only be modified by the server
   return res
     .status(200)
     .cookie("accessToken", accessToken, options)
