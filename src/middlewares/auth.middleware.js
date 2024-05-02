@@ -6,17 +6,13 @@ import jwt from "jsonwebtoken";
 const verifyJWT = asyncHandler(async (req, res, next) => {
   try {
     // get access token either from cookies or header
-    console.log("getting tokens");
-    console.log("Cookies", req.cookies);
 
     const token =
       req.cookies.accessToken ||
       req.header("Authorization")?.replace("Bearer ", "");
 
-    console.log("checking tokens");
     if (!token) {
-      console.log("Could not find access tokens");
-      throw new ApiError(404, "Unauthorized request dfkgjdfljbg");
+      throw new ApiError(404, "Unauthorized request");
     }
 
     // decode the token to get user information

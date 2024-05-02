@@ -9,13 +9,10 @@ import mongoose from "mongoose";
 const createAccount = asyncHandler(async (req, res) => {
   const { accountType, pin } = req.body;
 
-  console.log("Body", req.body);
-  console.log(accountType);
   if (!accountType) {
     throw new ApiError(400, "Account type is required");
   }
 
-  console.log(pin);
   if (!pin) {
     throw new ApiError(400, "Pin is required");
   }
@@ -31,7 +28,6 @@ const createAccount = asyncHandler(async (req, res) => {
 
   // generating account number based on the customerId
   const accountNumber = aleaRNGFactory(req.user.customerId).uInt32();
-  console.log("Account number", accountNumber);
 
   if (!accountNumber) {
     throw new ApiError(
@@ -47,7 +43,6 @@ const createAccount = asyncHandler(async (req, res) => {
     pin,
   });
 
-  console.log("Account :", account);
 
   if (!account) {
     throw new ApiError(500, "Something went wrong while creating account");
